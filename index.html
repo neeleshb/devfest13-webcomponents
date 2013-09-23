@@ -1,0 +1,645 @@
+<!--
+Google IO 2012 HTML5 Slide Template
+
+Authors: Eric Bidelman <ebidel@gmail.com>
+         Luke Mahé <lukem@google.com>
+
+URL: https://code.google.com/p/io-2012-slides
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GDG DevFest 2013</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">-->
+  <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+  <!--This one seems to work all the time, but really small on ipad-->
+  <!--<meta name="viewport" content="initial-scale=0.4">-->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" media="all" href="theme/css/default.css">
+  <link rel="stylesheet" media="all" href="theme/css/add2.css">
+  <link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="theme/css/phone.css">
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->
+  <script data-main="js/slides" src="js/require-1.0.8.min.js"></script>
+</head>
+<body style="opacity: 0">
+
+<slides class="layout-widescreen">
+ <!-- landing slide -->
+  <slide class="logoslide nobackground">
+    <article class="flexbox vcenter">
+      <span><img src="images/google_developers_logo.png"></span>
+    </article>
+  </slide>
+  <!-- title slide -->
+  <slide class="title-slide segue nobackground">
+    <aside class="gdbar"><img src="images/google_developers_icon_128.png"></aside>
+    <!-- The content of this hgroup is replaced programmatically through the slide_config.json. -->
+    <hgroup class="auto-fadein">
+      <h1 data-config-title><!-- populated from slide_config.json --></h1>
+      <h2 data-config-subtitle><!-- populated from slide_config.json --></h2>
+      <p data-config-presenter><!-- populated from slide_config.json --></p>
+    </hgroup>
+  </slide>
+<!-- what we will learn -->
+  <slide>
+    <hgroup>
+      <h2>Web Components</h2>
+      <h3>What are these and what do they do?</h3>
+    </hgroup>
+    <article style="line-height:1.6em;font-size:90%">
+	<ul class="build">
+<li>Today, widgets build out of HTML and JS suffer from a problem that they lack encapsulation. This means that your document stylesheet might accidentally apply to parts inside the widget; your JavaScript might accidentally modify parts inside the widget; your IDs might overlap with IDs inside the widget; and so on.<br><br></li>
+<li>Web Components precisely solve this problem.<br><br></li>
+<li>Web Components is a set of cutting edge standards that make it possible to build widgets, which can be reused reliably, which are encapsulated from JavaScript or stylesheet running on your pages, and which won’t break pages if the next version of the component changes internal implementation details.<br><br></li>
+
+	</article>
+  </slide>
+  <slide>
+	<hgroup>
+      <h2>Web Components</h2>
+	  <h3>building blocks</h3>
+    </hgroup>
+    <article style="font-size:24px;">
+	<ul id="whatAndwhy" class="build" style="line-height:1.6em;">	
+		<li><span class="bulleTitle">Templates:</span>&nbsp;&nbsp;Allow users to write an HTML markup that can be <b>customized and reused</b> as per the needs.<br/><br/></li>
+		<li><span class="bulleTitle">Shadow DOMs:</span>&nbsp;&nbsp;Add the power of <b>encapsulation</b> inside an HTML document<br/><br/></li>
+		<li><span class="bulleTitle">Elements:</span>&nbsp;&nbsp;Empower the users with the ability of writing new elements that <b>inherit</b> from existing elements<br/><br/></li>
+		<li><span class="bulleTitle">HTML Imports:</span>&nbsp;&nbsp;Make it feasible to <b>import an html document</b> inside another html document<br/><br/></li>
+	</ul>
+    </article>
+  </slide>
+  <slide class="segue dark nobackground">
+    <aside class="gdbar"><img src="images/google_developers_icon_128.png"></aside>
+    <hgroup class="auto-fadein">
+      <h2>Templates</h2>
+      <h3>Reusable HTML markups</h3>
+    </hgroup>
+  </slide>
+
+ <slide>
+    <hgroup>
+      <h2>Are templates really needed?</h2>
+	  <h3>Reusability as it exists today</h3>
+    </hgroup>
+    <article style="font-size:80%;">
+	<ul class="build">
+		<li> 
+			Offscreen DOM using <span class="red">hidden</span> or <span class="red">display:none</span>
+<br><br>
+<pre class="prettyprint" data-lang="html" style="margin-left:60px;width:70%">
+&lt;div id="mytemplate" hidden&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;img src="foo.png" /&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;div&gt;hello!/&lt;div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;script&gt;alert(1);&lt;/script&gt;
+&lt;/div&gt;
+</pre></li>
+<li>Manipulate markups as strings, and/or overload &lt;script&gt; tag:
+<br><br>
+<pre class="prettyprint" data-lang="html" style="margin-left:60px;width:70%">
+&lt;script id="mytemplate" type="foo"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;img src="foo.png" /&gt; &lt;div&gt;hello!&lt;/div&gt;
+&lt;/script&gt;
+</pre></li>
+</ul>
+<ul class="build" style="list-style-type:none;">
+<li><b style="font-size:140%">Problem: Neither of these is inert.</b></li>
+</ul>
+<aside style="display:none;"> downside is that this dom is not inert - the images will be downloaded, scripts will be executed, and so on. In addition, all the styles used by this markup must be prefixed with #mytemplate so that they don&quot;t mix up with other styles on the page. Also, for second case, we must relie on innerhtml because script tag doesnot have children. That means XSS possibility.
+</aside>
+</article>
+  </slide>
+  
+	<slide>
+    <hgroup>
+      <h2>Templates</h2>
+      <h3>Provide inert markups to be used later</h3>
+    </hgroup>
+    <article>
+<pre class="prettyprint" data-lang="html" style="margin-left:60px;width:70%">
+&lt;template id="mytemplate"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;img src="foo.png" /&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;script&gt;alert('foo');&lt;/script&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;div&gt;hello!&lt;/div&gt;
+&lt;/template&gt;
+</pre>
+<ul class="build" style="font-size:75%;line-height:1.6;">
+<li>We are working with DOM: No side effects of directly using HTML.</li>
+<li>Templates are <b>inert</b> - parsed but not executed.</li>
+<li>Templates are <b>Document Fragements</b> (i.e: document object that don't have a parent, and may contain ill-formed markups).</li>
+<li>Templates are <b>hidden</b> from the rest of the document. We cannot traverse directly into their DOM.
+<br>
+</ul>
+<a style="float:right;" href="/examples/one.html">Example</a>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Using Templates</h2>
+      <h3>templateElement.content</h3>
+    </hgroup>
+    <article>
+<pre class="prettyprint" data-lang="html" style="margin-left:60px;width:70%">
+&lt;template id="mytemplate"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;img src="foo.png" /&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;script&gt;alert('foo');&lt;/script&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;div&gt;hello!/&lt;div&gt;
+&lt;/template&gt;
+<br/>&lt;script&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;var templateElem = document.querySelector("#mytemplate");
+&nbsp;&nbsp;&nbsp;&nbsp;var templateContent = <b>templateElem.content</b>;
+&nbsp;&nbsp;&nbsp;&nbsp;var myNode = templateContent.cloneNode(true);
+&nbsp;&nbsp;&nbsp;&nbsp;myNode.querySelector("img").src = "bar.png";
+&nbsp;&nbsp;&nbsp;&nbsp;document.body.appendChild(myNode);
+&lt;/script&gt;
+</pre>
+<a style="float:right;" href="/examples/two.html">Example</a>
+</article>
+</slide>
+
+<slide>
+    <hgroup>
+      <h2>Templates - Example</h2>
+      <h3></h3>
+    </hgroup>
+    <article>
+<pre class="prettyprint" data-lang="html" style="display:inline-block;float:left;margin-left:60px;width:43%">	
+&lt;template&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;style&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;span {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;border: 1px solid #808080;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;background-color: #00BBFF;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;padding: 5px;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;color: white;
+&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/style&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;span&gt;Instance: &lt;b&gt;0&lt;/b&gt;&lt;/span&gt;
+&lt;/template&gt;
+&lt;button onclick=&quot;useIt()&quot;&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;Click me!
+&lt;/button&gt;
+&lt;b&gt;&lt;/b&gt;
+</pre>
+<pre class="prettyprint" data-lang="javascript" style="display: inline-block;float:right;width:50%">	
+function useIt() {
+&nbsp;&nbsp;&nbsp;&nbsp;var content = $$('template').content;
+&nbsp;&nbsp;&nbsp;&nbsp;var b = content.querySelector('b');
+&nbsp;&nbsp;&nbsp;&nbsp;b.textContent = parseInt(b.textContent) + 1;
+&nbsp;&nbsp;&nbsp;&nbsp;document.body.appendChild(
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;content.cloneNode(true)); 
+}
+</pre>
+<div id="demoOne">
+	<template>
+	   <style>
+	    #demo1div {
+	     border: 1px solid #808080;
+	     background-color: #00BBFF;
+	     padding: 5px;
+	     color: white;
+		display: inline-block;
+		margin-bottom: 10px;
+	   }
+	  </style>
+	  <div id="demo1div">Instance: <b>0</b></div>
+	</template>
+
+	<button onclick="useIt()">Click me!</button>
+	<script>
+	  function useIt() {
+	    var content = document.querySelector('template').content;
+	    var b = content.querySelector('b');
+	    b.textContent = parseInt(b.textContent) + 1;
+	   document.getElementById("demo1cont").appendChild(content.cloneNode(true)); 
+	  }
+	</script>
+	  <b></b>
+	  <div id="demo1cont" style="margin-top:40px;"></div>
+</div>
+	</article>
+	</slide>
+	
+	<!-- Templates end. Shadow doms start -->
+	
+	<slide class="segue dark nobackground">
+	    <aside class="gdbar"><img src="images/google_developers_icon_128.png"></aside>
+	    <hgroup class="auto-fadein">
+	      <h2>Shadow DOMs</h2>
+	      <h3>encapsulating markups and giving style boundaries</h3>
+	    </hgroup>
+	  </slide>
+	
+	<slide>
+	    <hgroup>
+	      <h2>Web already has encapsulation</h2>
+	      <h3>browser vendors never told us that&nbsp;!</h3>
+	    </hgroup>
+	    <article style="margin-top:100px;">			
+			<input type="color" style="float:left;margin-left:200px;"/>
+			<input type="date" style="float:left;margin-left:280px;"/>
+			<div style="height:250px;"></div>
+			<input type="range" style="float:left;margin-left:200px;"/>
+			<textarea style="float:left;margin-left:200px;margin-top:-20px;height:50px;width:200px;"></textarea>
+			<aside style="display:none;"> explain the shadow dom in the above three cases. Iframes create a seaprate document context that cannot talk with original document without hacks. Other two are actually real examples of shadow dom, because we can control them with mouse or keyboard but not through DOM APIs.Show by inspecting the element. Tell that shadow-dom is experimental feature and should be turned on. say that it is just that the browser vendors never exposed this to us, and now they are being exposed</aside>
+		</article>
+		</slide>
+	
+	<slide>
+	 <hgroup>
+	      <h2>Creating a Shadow Dom</h2>
+	      <h3>Theory</h3>
+	    </hgroup>
+		<article>
+			<ul class="build" style="line-height:1.60em;">
+				<li>Start with the node that you wish to encapsulate.</li>
+				<li>create a <b>shadow root</b> by calling <b>createShadowRoot</b> method on that node.</li>
+				<li>Replace the <b>innerHTML of the shadow root</b> by whatever content you want. This innerHTML gets encapsulated and is not accessible by the outside DOM</li>
+				<li> The original node that is shadow'ed gets rendered based on what innerHTML you added, not based on its original content.</li>
+				<li>There is no way for any external JS to access this newly added innerHTML. Any attempt to access the contents of the original node will return the "original content" present in the source, not the content defined by the shadow.</li>
+			</ul>
+		</article>
+	</slide>
+
+	<slide>
+	 <hgroup>
+	      <h2>Creating a Shadow Dom</h2>
+	      <h3>Code</h3>
+	    </hgroup>
+		<article>
+<pre class="prettyprint" data-lang="html" style="margin-left:60px;width:70%">
+&lt;div id="host"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;h2&gt;My Header&lt;/h2&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;My paragraph&lt;/p&gt;
+&lt;/div&gt;
+&lt;script&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;var hostElem = document.querySelector("#host");
+&nbsp;&nbsp;&nbsp;&nbsp;var shadow = hostElem.<b>webkitCreateShadowRoot()</b>;
+&nbsp;&nbsp;&nbsp;&nbsp;shadow.innerHTML = 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&lt;h2&gt;My new header&lt;/h2&gt;&lt;p&gt;my new paragraph&lt;/p&gt;";	
+&lt;/script&gt;
+&lt;button onclick="alert(document.querySelector('#host').innerHTML);"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;click me
+&lt;/button&gt;
+
+</pre>
+	<a style="float:right;" href="/examples/three.html">Example</a>
+	</article>
+	</slide>
+
+	<slide>
+	 <hgroup>
+	      <h2>Shadow DOM</h2>
+	      <h3>Style Boundaries</h3>
+	    </hgroup>
+		<article>
+<pre class="prettyprint" data-lang="html" style="margin-left:60px;width:70%">
+&lt;div id="host"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;h2&gt;My Header&lt;/h2&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;My paragraph&lt;/p&gt;
+&lt;/div&gt;
+&lt;h2&gt;Another header&lt;/h2&gt;
+&lt;p&gt;Another paragrah&lt;/p&gt;
+</pre>
+<pre class="prettyprint" data-lang="javascript" style="margin-left:60px;width:70%">
+var hostElem = document.querySelector("#host");
+var shadow = hostElem.webkitCreateShadowRoot();
+shadow.innerHTML = 
+&nbsp;&nbsp;&nbsp;&nbsp;"&lt;style&gt;" +
+&nbsp;&nbsp;&nbsp;&nbsp;"h2 { color: red;} p { background-color: #00BFFF;}" + 
+&nbsp;&nbsp;&nbsp;&nbsp;"&lt;/style&gt;" +
+&nbsp;&nbsp;&nbsp;&nbsp;"&lt;h2&gt;My new header&lt;/h2&gt;&lt;p&gt;my new paragraph&lt;/p&gt;";
+</pre>
+<a style="float:right;margin-top:-10px;" href="/examples/ten.html">Example</a>
+		</article>
+	</slide>	
+	
+	
+	<slide>
+	 <hgroup>
+	      <h2>Templates + Shadow DOMs</h2>
+	      <h3>Using templates instead of innerHTML</h3>
+	    </hgroup>
+		<article>
+<pre class="prettyprint" data-lang="Template" style="display:inline-block;margin-left:60px;width:40%;float:left;">
+<br>
+&lt;template id=&quot;myTemplate&quot;&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;style&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h2 {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;color: red;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p { 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;background-color: #00BFFF;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/style&gt;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;h2&gt;My new header&lt;/h2&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;My new paragraph&lt;/p&gt;
+&lt;/template&gt;
+</pre>
+<pre class="prettyprint" data-lang="Shadow" style="display:inline-block;width:53%;float:right;">
+<br>	
+&lt;div id=&quot;host&quot;&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;h2&gt;My Header&lt;/h2&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;My paragraph&lt;/p&gt;
+&lt;/div&gt; 
+&lt;h2&gt; Another header&lt;/h2&gt;
+&lt;p&gt; Another paragraph&lt;/p&gt;  
+
+&lt;script&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;var hostElem = document.querySelector(&quot;#host&quot;);
+&nbsp;&nbsp;&nbsp;&nbsp;var shadow = hostElem.webkitCreateShadowRoot();
+&nbsp;&nbsp;&nbsp;&nbsp;var content = $(&quot;myTemplate&quot;).content;
+&nbsp;&nbsp;&nbsp;&nbsp;shadow.appendChild(content); 
+&lt;/script&gt; 
+</pre>
+<a href="/examples/five.html" style="float:right;margin-right:80px;">Example</a>
+		</article>
+  </slide>
+
+	<slide>
+	 <hgroup>
+	      <h2>Shadow DOM</h2>
+	      <h3>Reusing the host element</h3>
+	    </hgroup>
+		<article>
+<pre class="prettyprint" data-lang="html" style="margin-left:60px;width:70%">
+&lt;template id=&quot;myTemplate&quot;&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;something before
+&nbsp;&nbsp;&nbsp;&nbsp;<b>&lt;content&gt;&lt;/content&gt;</b>
+&nbsp;&nbsp;&nbsp;&nbsp;something after
+&lt;/template&gt;
+
+&lt;div id=&quot;host&quot;&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;h2&gt;My Header&lt;/h2&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;My paragraph&lt;/p&gt;
+&lt;/div&gt; 
+
+&lt;script&gt;
+&nbsp;&nbsp;var hostElem =$("host");
+&nbsp;&nbsp;var shadow = hostElem.webkitCreateShadowRoot();
+&nbsp;&nbsp;shadow.appendChild($("myTemplate").content);	
+&lt;/script&gt; 
+</pre>
+<a style="float:right;margin-top:-100px;" href="/examples/six.html">Example</a>
+		</article>
+  </slide>
+
+	<slide>
+	    <hgroup>
+	      <h2>Shadow DOM</h2>
+	      <h3>Reusing various parts of the host element</h3>
+	    </hgroup>
+	    <article>
+<pre class="prettyprint" data-lang="html" style="font-size:70%;line-height:1.3em;margin-left:60px;width:70%">
+&lt;template id=&quot;myTemplate&quot;&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;content select=&quot;p&quot;&gt;&lt;/content&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;content select=&quot;h2&quot;&gt;&lt;/content&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;content select=&quot;*&quot;&gt;&lt;/content&gt;
+&lt;/template&gt;
+
+&lt;div id=&quot;host&quot;&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;h2 &gt;My Header&lt;/h2&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;p &gt;My paragraph&lt;/p&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;span&gt;my span&lt;/span&gt;
+&lt;/div&gt;  
+
+&lt;script&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;var hostElem = $("host");
+&nbsp;&nbsp;&nbsp;&nbsp;var shadow = hostElem.webkitCreateShadowRoot();
+&nbsp;&nbsp;&nbsp;&nbsp;shadow.appendChild($("myTemplate").content);	
+&lt;/script&gt;
+		</pre>
+<a style="float:right;margin-top:-100px;" href="/examples/seven.html">Example</a>
+    </article>
+  </slide>
+
+<!-- shadow doms end, custom elements start here. -->
+<slide class="segue dark nobackground">
+    <aside class="gdbar"><img src="images/google_developers_icon_128.png"></aside>
+    <hgroup class="auto-fadein">
+      <h2>Custom Elements</h2>
+      <h3>Inheriting from existing elements</h3>
+    </hgroup>
+  </slide>
+<slide>
+	<hgroup>
+		<h2>Custom Elements</h2>
+		<h3>Aren't they alredy supported?</h3>
+	</hgroup>
+	<article>
+<pre class="prettyprint" data-lang="html">
+&lt;body&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;random onclick=&quot;alert(1);&quot;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;style=&quot;border:1px solid red;width:200px;height:200px;display: block;&quot;&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/random&gt;
+&lt;/body&gt;
+</pre>
+<ul class="build" style="line-height:1.4em;font-size:90%;">
+	<li>All unknown elements inherit from <b>HTMLUnknownElement</b>, which is a subclass of <b>HTMLElement.</b></li>
+	<li>No useful functionality is associated with an HTMLUnknownElement, so an HTMLUnknownElement cannot behave like a button or a textbox or a video tag etc.
+	<li>That is the reason why we need <b>Custom Elements</b>. They can inherit from known HTML Elements like HTMLButtonElement etc, and thus get their properties automatically.
+</ul>
+	</article>
+   </slide>
+
+<!-- Client libraries -->
+<slide>
+	<hgroup>
+		<h2>Custom Elements</h2>
+		<h3>Defining and registering</h3>
+	</hgroup>
+	<article>
+		<ul class="build" style="font-size:80%;line-height:1.5em;">
+			<li><b>Decide a name</b> for your custom element. For example - "x-foo", "mega-button", "email-text" etc. <b>The name must contain a hyphen.</b><br><br></li>
+			<li>Decide <b>which HTML element you want your custom element to inherit from</b>. For example, if your custom element "mega-button" is a specialized button, it should inherit from  HTMLButtonElement. Similarly a textarea might inherit from HTMLTextAreaElement and a text input might inherit from HTMLInputElement.<br><br></li>
+			<li>Register the new element by using <b>document.register</b></br>
+<pre class="prettyprint" data-lang="javascript" style="margin-left:60px;width:70%">
+var MegaButton = 
+&nbsp;&nbsp;&nbsp;&nbsp;document.register('mega-button', {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prototype: Object.create(HTMLButtonElement.prototype)});
+</pre></li>
+</ul>
+</article>
+</slide>	
+
+<slide>
+	<hgroup>
+		<h2>Custom Elements</h2>
+		<h3>Three ways of instantiating</h3>
+	</hgroup>
+	<article style="font-size:80%">
+<ul class="build" style="font-size:80%">
+	<li>Use the <b>HTML Markup</b><br><br>
+<pre class="prettyprint" data-lang="html" style="margin-left:60px;width:70%">
+&lt;button is="mega-button" /&gt;
+</pre><br></li>
+<li> Use DOM function <b>document.createElement</b><br><br>
+<pre class="prettyprint" data-lang="javascript" style="margin-left:60px;width:70%">
+var megaButton = 
+&nbsp;&nbsp;&nbsp;&nbsp;document.createElement('button', 'mega-button');
+document.body.appendChild(megaButton);
+</pre><br></li>
+<li> Use the <b>new</b> operator<br><br>
+<pre class="prettyprint" data-lang="javascript" style="margin-left:60px;width:70%">
+var megaButton = new MegaButton();
+document.body.appendChild(megaButton);
+</pre><br></li>
+</ul>
+</article>
+</slide>
+
+<slide>
+	<hgroup>
+		<h2>Custom Elements</h2>
+		<h3>Adding properties and methods</h2>
+		
+	</hgroup>
+	<article>
+	<pre class="prettyprint" data-lang="html" style="margin-left:60px;width:80%">
+&lt;button is=&quot;mega-button&quot; onclick=&quot;this.foo();&quot;&gt;Mega Button&lt;/button&gt;
+&lt;button&gt;Normal Button&lt;/button&gt;
+
+&lt;script&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;var megaButtonProto = Object.create(HTMLButtonElement.prototype);
+&nbsp;&nbsp;&nbsp;&nbsp;megaButtonProto.foo = function() {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;alert(&quot;Mega button clicked&quot;);
+&nbsp;&nbsp;&nbsp;&nbsp;};
+
+&nbsp;&nbsp;&nbsp;&nbsp;document.register('mega-button', {prototype: megaButtonProto});
+&lt;/script&gt;
+</pre>
+<a style="float:right;" href="/examples/eight.html">Example</a>
+			
+	</article>
+</slide>
+
+<slide>
+	<hgroup>
+		<h2>Custom Elements</h2>
+		<h3>Lifecycle Callbacks</h3>
+	</hgroup>
+	<article style="line-height:1.6em;font-size:90%;">
+	<ul class="build">
+		<li><b>createdCallback</b>: When a new instance of the element is created.<br/><br/></li>
+		
+		<li><b>enteredViewCallback</b>: When an instance of the element gets inserted in the document<br/><br/></li>
+		<li><b>leftViewCallback</b>: When instance of the element gets removed from the document<br/><br/></li>
+		<li><b>attributeChangedCallback(attrName, oldVal, newVal)</b>:	When an attribute gets added, removed, or updated in the instance of the element<br/><br/></li>
+	</ul>
+	</article>
+</slide>
+
+<slide>
+	<hgroup>
+		<h2>Custom Elements</h2>
+		<h3>Applying styles</h3>
+	</hgroup>
+	<article>
+<pre class="prettyprint" data-lang="html" style="margin-left:60px;width:80%">
+&lt;style&gt;
+[is=mega-button] {
+&nbsp;&nbsp;&nbsp;&nbsp;background: #00BFFF;
+&nbsp;&nbsp;&nbsp;&nbsp;color: white;
+&nbsp;&nbsp;&nbsp;&nbsp;-webkit-transition: 2s linear;
+}
+[is=mega-button]:hover {
+&nbsp;&nbsp;&nbsp;&nbsp;-webkit-transform: rotate(-360deg) scale(2,2);
+}
+&lt;/style&gt;
+&lt;button is="mega-button" onclick="this.foo();"&gt;Mega Button&lt;/button&gt;
+&lt;script&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;var megaButtonProto = Object.create(HTMLButtonElement.prototype);
+&nbsp;&nbsp;&nbsp;&nbsp;document.register('mega-button', {prototype: megaButtonProto});
+&lt;/script&gt;
+</pre>
+<a style="float:right;margin-top:-50px;" href="/examples/nine.html">Example</a>
+	</article>
+</slide>
+
+
+<!-- custom elements end, html imports start -->
+
+<slide class="segue dark nobackground">
+    <aside class="gdbar"><img src="images/google_developers_icon_128.png"></aside>
+    <hgroup class="auto-fadein">
+      <h2>HTML Imports</h2>
+      <h3>Reusing other's components</h3>
+    </hgroup>
+ </slide>
+
+<slide>
+	<hgroup>
+		<h2>HTML Import</h2>
+		<h3>using link tag</h3>
+	</hgroup>
+	<article>
+<pre class="prettyprint" data-lang="html" style="margin-left:60px;width:80%">	
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;link rel=&quot;import&quot; href=&quot;x-foo.html&quot; /&gt;
+&lt;/head&gt;
+&lt;body&gt;  
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;button is=&quot;x-foo&quot;&gt;&lt;/button&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+</article>
+</slide>
+<!-- wrap it all -->
+<slide>
+	<hgroup>
+		<h2>To wrap it all...</h2>
+		<h3>...assuming you are still awake!</h3>
+	</hgroup>
+		<article>
+			<ul id="whatAndwhy" class="build" style="line-height:1.6em;">	
+				<li><span class="bulleTitle">Templates:</span>&nbsp;&nbsp;Allow users to write an HTML markup that can be <b>customized and reused</b> as per the needs.<br/><br/></li>
+				<li><span class="bulleTitle">Shadow DOMs:</span>&nbsp;&nbsp;Add the power of <b>encapsulation</b> inside an HTML document<br/><br/></li>
+				<li><span class="bulleTitle">Elements:</span>&nbsp;&nbsp;Empower the users with the ability of writing new elements that <b>inherit</b> from existing elements<br/><br/></li>
+				<li><span class="bulleTitle">HTML Imports:</span>&nbsp;&nbsp;Make it feasible to <b>import an html document</b> inside another html document<br/><br/></li>
+			</ul>
+		</article>
+	</slide>
+	
+	<slide>
+		<hgroup>
+			<h2>Dive Deeper</h2>
+			<h3>...if you are looking for pearls!</h3>
+		</hgroup>
+			<article>
+				<ul style="line-height:1.6em;">	
+					<li><a href="http://html5-demos.appspot.com/static/webcomponents/index.html">Web Components: HTML5 Demos</a></li>
+					<li><a href="http://www.webcomponentsshift.com/">www.webcomponentshift.com</a></li>
+					<li><A href="http://www.html5rocks.com/en/tutorials/webcomponents/shadowdom/">shadod DOM 101</a>, <a href="http://www.html5rocks.com/en/tutorials/webcomponents/shadowdom-201/">shadow DOM 201</a>, <a href="http://www.html5rocks.com/en/tutorials/webcomponents/shadowdom-301/">Shadow DOM 301</a>, <a href="http://updates.html5rocks.com/2013/03/Visualizing-Shadow-DOM-Concepts">Visualizing shadow DOM concepts</a></li>
+					<li><a href="http://www.html5rocks.com/en/tutorials/webcomponents/customelements/">Custom Elements</a></li>
+					<li><a href="http://www.polymer-project.org/">Polymer Project - Polyfills for web components</a></li>
+				</ul>
+			</article>
+		</slide>
+  		<slide if=" segue nobackground">
+			<img src="images/html5_sticker.png" style="margin-left:-120px;height:100%" /></h2>
+		    </article>
+		    <p class="auto-fadein" data-config-contact>
+		      <!-- populated from slide_config.json -->
+		    </p>
+		  </slide>
+
+  <slide class="logoslide dark nobackground">
+    <article class="flexbox vcenter">
+      <span><img src="images/google_developers_logo_white.png"></span>
+    </article>
+  </slide>
+
+  <slide class="backdrop"></slide>
+
+</slides>
+
+<!--[if IE]>
+  <script src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+  <script>CFInstall.check({mode: 'overlay'});</script>
+<![endif]-->
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>JS Bin</title>
+</head>
+<body>
+  <div id="host">
+    <h2>My Header</h2>
+    <p>My paragraph</p>
+</div>
+<script>
+    var hostElem = document.querySelector("#host");
+    var shadow = hostElem.webkitCreateShadowRoot();
+    shadow.innerHTML = 
+      "<h2>My new header</h2><p>my new paragraph</p>";	
+</script>
+  <button onclick="alert(document.querySelector('#host').innerHTML);">click me</button>
+</body>
+</html>

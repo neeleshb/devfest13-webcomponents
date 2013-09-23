@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>JS Bin</title>
+  <style>
+    button {
+      height: 40px;
+      width: 300px;
+      margin-top: 200px;
+      display: block;
+      margin-left: 200px;
+      font-size:28px;
+      border-radius:10px;
+      cursor: pointer;
+    }
+    [is=mega-button] {
+      background: #00BFFF;
+      color: white;
+      -webkit-transition: 2s linear;
+    }
+    [is=mega-button]:hover {
+      -webkit-transform: rotate(-360deg) scale(2,2);
+    }
+    
+  </style>
+</head>
+<body>
+  <button is="mega-button" onclick="this.foo();">Mega Button</button>
+<button>Normal Button</button>
+
+<script>
+    var megaButtonProto = Object.create(HTMLButtonElement.prototype);
+    megaButtonProto.foo = function() {
+        alert("Mega button clicked");
+    };
+
+    document.register('mega-button', {prototype: megaButtonProto});
+</script>
+</body>
+</html>

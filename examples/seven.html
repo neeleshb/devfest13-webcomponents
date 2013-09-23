@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>JS Bin</title>
+</head>
+<body>
+  <template id="myTemplate">
+    <content select="p"></content>
+    <content select="h2"></content>
+    <content select="*"></content>
+</template>
+  
+<div id="host">
+    <h2 >My Header</h2>
+    <p >My paragraph</p>
+    <span>my span</span>
+</div>  
+
+<script>
+    var hostElem = document.getElementById("host");
+    var shadow = hostElem.webkitCreateShadowRoot();
+    shadow.appendChild(document.getElementById("myTemplate").content);	
+</script>
+</body>
+</html>

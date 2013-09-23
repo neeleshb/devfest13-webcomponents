@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>JS Bin</title>
+</head>
+<body>
+  <template id="mytemplate">
+    <h2>Chrome Logo<h2>
+    <img src="foo.png" />
+    <script>alert('hey');</script>    
+</template>
+  
+      
+<script>
+  function foo() {
+    var templateElem = document.querySelector("#mytemplate");
+    var templateContent = templateElem.content;
+    var myNode = templateContent.cloneNode(true);
+    myNode.querySelector("img").src = "http://i.i.cbsi.com/cnwk.1d/i/tim/2011/03/16/Chrome-logo-2011-03-16.jpg";
+    document.body.appendChild(myNode);
+  }
+  
+</script>
+      
+      
+      <button style="height:40px;width:300px;font-size:18px;cursor:pointer;margin-top:100px;margin-left:100px;" onclick="foo();">Instantiate the template</button>
+</body>
+</html>
